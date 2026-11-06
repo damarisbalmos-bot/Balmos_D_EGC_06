@@ -133,7 +133,12 @@ public class Game : GameWindow
 
         // TODO (T3): la clic stânga, obiectul selectat se mută în punctul din lume aflat sub cursor
         //            (folosiți ScreenToWorld; Depth nu se schimbă)
+        if (MouseState.IsButtonPressed(MouseButton.Left))
+        {
+            Vector2 mouseWorld = ScreenToWorld(MouseState.Position);
 
+            sel.Transform.Position = mouseWorld;
+        }
         // TODO (T4, facultativ): clic dreapta = pivot; tasta P ținută = rotație în jurul pivotului
 
         // --- Camera: tastatura și rotița (secțiunea 6.2) -----------------------------
@@ -213,8 +218,20 @@ public class Game : GameWindow
     /// <summary>Transformă poziția mouse-ului (pixeli, origine stânga-sus) în coordonate de lume.</summary>
     private Vector2 ScreenToWorld(Vector2 mousePixels)
     {
-        // TODO (T3): pasul 1 (pixel → NDC), apoi pasul 2 (NDC → lume, cu inversa lui view * projection)
-        return Vector2.Zero;
+        // T3: Semnul minus apare deoarece coordonatele mouse-ului
+        // cresc de sus în jos, iar coordonatele NDC cresc de jos în sus.
+
+        float x = 2.0f * mousePixels.X / ClientSize.X - 1.0f;
+        float y = 1.0f - 2.0f * mousePixels.Y / ClientSize.Y;
+
+        Vector4 ndc = new Vector4(x, y, 0.0f, 1.0f);
+
+        Matrix4 inverse =
+            (_camera.ViewMatrix * _camera.ProjectionMatrix).Inverted();
+
+        Vector4 world = Vector4.TransformRow(ndc, inverse);
+
+        return new Vector2(world.X / world.W, world.Y / world.W);
     }
 
     /// <summary>Tasta R: obiectele revin la transformările inițiale, camera la starea inițială.</summary>

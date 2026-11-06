@@ -98,28 +98,36 @@ public class Game : GameWindow
         }
 
         // --- Obiectul selectat: tastatura (secțiunea 8) ------------------------------
-
+        
         float dt = (float)args.Time;
         SceneObject sel = _scene[_selected];
+        
+        // T2: Shift ținut apăsat = toate mișcările obiectului (săgeți, rotație, scalare) de 3 ori mai rapide
+        float boost = KeyboardState.IsKeyDown(Keys.LeftShift) ? 3.0f : 1.0f;
 
-        const float moveSpeed = 2.0f;   // unități de lume pe secundă
-        if (KeyboardState.IsKeyDown(Keys.Left))  sel.Transform.Position.X -= moveSpeed * dt;
+        float moveSpeed = 2.0f * boost;   // unități de lume pe secundă
+        if (KeyboardState.IsKeyDown(Keys.Left)) sel.Transform.Position.X -= moveSpeed * dt;
         if (KeyboardState.IsKeyDown(Keys.Right)) sel.Transform.Position.X += moveSpeed * dt;
-        if (KeyboardState.IsKeyDown(Keys.Down))  sel.Transform.Position.Y -= moveSpeed * dt;
-        if (KeyboardState.IsKeyDown(Keys.Up))    sel.Transform.Position.Y += moveSpeed * dt;
+        if (KeyboardState.IsKeyDown(Keys.Down)) sel.Transform.Position.Y -= moveSpeed * dt;
+        if (KeyboardState.IsKeyDown(Keys.Up)) sel.Transform.Position.Y += moveSpeed * dt;
 
-        // TODO (T2): Q / E rotesc obiectul, Z / X îl scalează
+        // Q / E: rotație cu 90° pe secundă (Q = sens trigonometric, E = sens orar)
+        const float rotSpeed = 90.0f;     // grade pe secundă
+        if (KeyboardState.IsKeyDown(Keys.Q)) sel.Transform.Rotation += rotSpeed * boost * dt;
+        if (KeyboardState.IsKeyDown(Keys.E)) sel.Transform.Rotation -= rotSpeed * boost * dt;
 
-        if (KeyboardState.IsKeyPressed(Keys.Tab)) _selected = (_selected + 1) % _scene.Count;
-        if (KeyboardState.IsKeyPressed(Keys.O))   _camera.IsPerspective = !_camera.IsPerspective;
-        if (KeyboardState.IsKeyPressed(Keys.F))   _wireframe = !_wireframe;
-        if (KeyboardState.IsKeyPressed(Keys.R))   ResetScene();
-
-        if (KeyboardState.IsKeyPressed(Keys.Tab) || KeyboardState.IsKeyPressed(Keys.O) ||
-            KeyboardState.IsKeyPressed(Keys.R))
-        {
-            _titleDirty = true;
-        }
+        // Z / X: micșorare / mărire uniformă cu factorul 1,5 pe secundă
+        // T2: scalarea se face prin înmulțire și nu prin adunare, pentru că percepem mărimea în
+        // mod relativ (proporțional): înmulțirea cu același factor face obiectul de 1,5 ori mai
+        // mare indiferent de mărimea de la care pornește, pe când adunarea ar fi lentă pe un obiect
+        // mare și bruscă pe unul mic, iar scara ar putea ajunge la 0 sau la valori negative
+        // (obiectul s-ar răsturna). MathF.Pow(factor, dt) face ca ritmul să fie același
+        // la orice FPS (1,5 pe secundă, indiferent de durata unui cadru).
+        float scaleFactor = MathF.Pow(1.5f, boost * dt);
+        if (KeyboardState.IsKeyDown(Keys.X)) sel.Transform.Scale *= scaleFactor;
+        if (KeyboardState.IsKeyDown(Keys.Z)) sel.Transform.Scale /= scaleFactor;
+        sel.Transform.Scale.X = Math.Clamp(sel.Transform.Scale.X, 0.1f, 10.0f);
+        sel.Transform.Scale.Y = Math.Clamp(sel.Transform.Scale.Y, 0.1f, 10.0f);
 
         // --- Obiectul selectat: mouse-ul (secțiunea 9) -------------------------------
 

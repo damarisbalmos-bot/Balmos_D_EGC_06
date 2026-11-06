@@ -24,6 +24,9 @@ public class Game : GameWindow
     // Starea aplicației (se modifică în OnUpdateFrame, se folosește în OnRenderFrame).
     private int _selected;            // indexul obiectului selectat în _scene (tasta Tab)
     private bool _wireframe;          // contur (true) sau plin (false)
+    private Vector2 _pivot;
+    private bool _hasPivot = false;
+    private bool _rightMouseWasDown = false;
 
     // Contoare afișate în titlul ferestrei.
     private readonly string _baseTitle;
@@ -101,7 +104,40 @@ public class Game : GameWindow
         
         float dt = (float)args.Time;
         SceneObject sel = _scene[_selected];
-        
+        // T4: stabilim pivotul la clic dreapta
+        bool rightMouseDown = MouseState.IsButtonDown(MouseButton.Right);
+
+        if (rightMouseDown && !_rightMouseWasDown)
+        {
+            _pivot = ScreenToWorld(MouseState.Position);
+            _hasPivot = true;
+        }
+
+        _rightMouseWasDown = rightMouseDown;
+
+
+        // T4: rotim obiectul selectat în jurul pivotului
+        if (_hasPivot && KeyboardState.IsKeyDown(Keys.P))
+        {
+            float angle = 90.0f * dt;
+
+            float radians = MathHelper.DegreesToRadians(angle);
+
+            Vector2 direction = sel.Transform.Position - _pivot;
+
+            float cos = MathF.Cos(radians);
+            float sin = MathF.Sin(radians);
+
+            Vector2 newPosition = new Vector2(
+                direction.X * cos - direction.Y * sin,
+                direction.X * sin + direction.Y * cos
+            );
+
+            sel.Transform.Position = _pivot + newPosition;
+
+            // Rotim și obiectul în jurul propriei axe
+            sel.Transform.Rotation += angle;
+        }
         // T2: Shift ținut apăsat = toate mișcările obiectului (săgeți, rotație, scalare) de 3 ori mai rapide
         float boost = KeyboardState.IsKeyDown(Keys.LeftShift) ? 3.0f : 1.0f;
 

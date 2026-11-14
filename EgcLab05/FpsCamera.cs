@@ -118,6 +118,14 @@ public class FpsCamera : Camera
         _right = Vector3.Normalize(Vector3.Cross(_front, WorldUp));
         _up = Vector3.Normalize(Vector3.Cross(_right, _front));
     }
+    public void SetPose(Vector3 position, Vector3 direction)
+    {
+        direction.Normalize();
+        _position = position;
+        Pitch = Math.Clamp(MathHelper.RadiansToDegrees(MathF.Asin(direction.Y)), -MaxPitch, MaxPitch);
+        Yaw = MathHelper.RadiansToDegrees(MathF.Atan2(direction.Z, direction.X));
+        UpdateVectors();
+    }
 
     public override void Reset()
     {

@@ -77,14 +77,30 @@ public class FpsCamera : Camera
 
         // --- 3. Deplasarea: W A S D ---------------------------------------------------
 
-        // TODO 5.6: direcția "înainte" (în modul mers: proiecția lui Front pe planul orizontal),
-        //           apoi deplasarea cu viteză constantă, independentă de numărul de cadre pe secundă.
-        //           Pași: (1) forward; (2) vectorul "move" = suma direcțiilor tastelor apăsate
-        //           (W +forward, S -forward, D +_right, A -_right); (3) normalizați "move";
-        //           (4) _position += move * viteză * dt (viteza crește de SprintFactor ori cu Shift stânga).
+        Vector3 forward = _front;
+        if (!FreeFly)
+        {
+            forward = new Vector3(_front.X, 0.0f, _front.Z);
+            forward = forward.LengthSquared > 1e-8f ? Vector3.Normalize(forward) : Vector3.Zero;
+        }
 
-        // TODO 5.7 (facultativ): în zbor liber (FreeFly), "forward" este chiar _front,
-        //           iar Space urcă și Ctrl stânga coboară (pe axa Y a lumii, WorldUp).
+        Vector3 move = Vector3.Zero;
+        if (keyboard.IsKeyDown(Keys.W)) move += forward;
+        if (keyboard.IsKeyDown(Keys.S)) move -= forward;
+        if (keyboard.IsKeyDown(Keys.D)) move += _right;
+        if (keyboard.IsKeyDown(Keys.A)) move -= _right;
+        if (FreeFly)
+        {
+            if (keyboard.IsKeyDown(Keys.Space)) move += WorldUp;
+            if (keyboard.IsKeyDown(Keys.LeftControl)) move -= WorldUp;
+        }
+
+        if (move.LengthSquared > 1e-8f)
+        {
+            move.Normalize();
+            float speed = MoveSpeed * (keyboard.IsKeyDown(Keys.LeftShift) ? SprintFactor : 1.0f);
+            _position += move * speed * dt;
+        }
     }
 
     /// <summary>

@@ -124,9 +124,25 @@ public static class Shapes
         AddFace(vertices, indices, 1,
                 new Vector3(h, -h, h), new Vector3(h, -h, -h), new Vector3(h, h, -h), new Vector3(h, h, h),
                 new Color4(1.0f, 0.2f, 0.2f, 1.0f));
+        // Fața 2: -X (stânga). Privită din -X: dreapta = +Z, sus = +Y.
+        AddFace(vertices, indices, 2,
+                new Vector3(-h, -h, -h), new Vector3(-h, -h, h), new Vector3(-h, h, h), new Vector3(-h, h, -h),
+                new Color4(0.2f, 0.9f, 0.9f, 1.0f));
 
-        // TODO 5.3: fețele 2..5. Pentru fiecare față, imaginați-vă că o priviți din afara cubului
-        //           și stabiliți direcțiile "dreapta" și "sus" (ca în comentariile de mai sus).
+        // Fața 3: +Y (sus). Privită de deasupra, cu "sus" = -Z: dreapta = +X.
+        AddFace(vertices, indices, 3,
+                new Vector3(-h, h, h), new Vector3(h, h, h), new Vector3(h, h, -h), new Vector3(-h, h, -h),
+                new Color4(0.2f, 0.9f, 0.3f, 1.0f));
+
+        // Fața 4: -Y (jos). Privită de dedesubt, cu "sus" = +Z: dreapta = +X.
+        AddFace(vertices, indices, 4,
+                new Vector3(-h, -h, -h), new Vector3(h, -h, -h), new Vector3(h, -h, h), new Vector3(-h, -h, h),
+                new Color4(0.9f, 0.2f, 0.9f, 1.0f));
+
+        // Fața 5: -Z (spate). Privită din -Z: dreapta = -X, sus = +Y.
+        AddFace(vertices, indices, 5,
+                new Vector3(h, -h, -h), new Vector3(-h, -h, -h), new Vector3(-h, h, -h), new Vector3(h, h, -h),
+                new Color4(1.0f, 0.9f, 0.2f, 1.0f));
 
         return new Mesh(vertices, indices);
     }
